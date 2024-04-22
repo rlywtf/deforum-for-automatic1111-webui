@@ -25,26 +25,24 @@ def get_samplers_list():
         'dpm++ 2s a': 'DPM++ 2S a',
         'dpm++ 2m': 'DPM++ 2M',
         'dpm++ sde': 'DPM++ SDE',
-        'dpm++ 2m sde karras': 'DPM++ 2M SDE Karras',
         'dpm fast': 'DPM fast',
         'dpm adaptive': 'DPM adaptive',
-        'lms karras': 'LMS Karras',
-        'dpm2 karras': 'DPM2 Karras',
-        'dpm2 a karras': 'DPM2 a Karras',
-        'dpm++ 2s a karras': 'DPM++ 2S a Karras',
-        'dpm++ 2m karras': 'DPM++ 2M Karras',
-        'dpm++ sde karras': 'DPM++ SDE Karras',
-        'dpm++ 2m sde exponential': 'DPM++ 2M SDE Exponential',
         'dpm++ 2m sde heun': 'DPM++ 2M SDE Heun',
-        'dpm++ 2m sde heun karras': 'DPM++ 2M SDE Heun Karras',
-        'dpm++ 2m sde Heun Exponential': 'DPM++ 2M SDE Heun Exponential',
         'dpm++ 3m sde': 'DPM++ 3M SDE',
-        'dpm++ 3m sde karras': 'DPM++ 3M SDE Karras',
-        'dpm++ 3m sde exponential': 'DPM++ 3M SDE Exponential',
         'ddim': 'DDIM',
         'plms': 'PLMS',
         'unipc': 'UniPC',
         'restart': 'Restart'
+    }
+
+def get_schedulers_list():
+    return {
+        'automatic': 'Automatic',
+        'uniform': 'Uniform',
+        'karras': 'Karras',
+        'exponential': 'Exponential',
+        'polyexponential': 'Polyexponential',
+        'sgm uniform': 'SGM Uniform'
     }
 
 def DeforumAnimPrompts():

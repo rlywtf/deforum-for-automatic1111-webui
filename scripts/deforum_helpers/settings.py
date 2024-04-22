@@ -132,6 +132,9 @@ def load_all_settings(*args, ui_launch=False, **kwargs):
         if key == 'sampler' and isinstance(val, int):
             from modules.sd_samplers import samplers_for_img2img
             val = samplers_for_img2img[val].name
+        if key == 'scheduler' and isinstance(val, int):
+            from modules.sd_schedulers import schedulers_map
+            val = schedulers_map[val]
         elif key == 'fill' and isinstance(val, int):
             val = mask_fill_choices[val]
         elif key in {'reroll_blank_frames', 'noise_type'} and key not in jdata:
