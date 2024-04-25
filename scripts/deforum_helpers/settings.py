@@ -132,21 +132,9 @@ def load_all_settings(*args, ui_launch=False, **kwargs):
         if key == 'sampler' and isinstance(val, str):
             samp_val = val.split()
             scheduler_val = None
-            if samp_val[-1] == 'Uniform':
+            if samp_val[-1] in ['Uniform','SGM Uniform','Karras','Exponential','Polyexponential']:
                 scheduler_val = samp_val[-1]
-                val = (val.split(" Uniform"))[0]
-            if samp_val[-1] == 'Karras':
-                scheduler_val = samp_val[-1]
-                val = (val.split(" Karras"))[0]
-            if samp_val[-1] == 'Exponential':
-                scheduler_val = samp_val[-1]
-                val = (val.split(" Exponential"))[0]
-            if samp_val[-1] == 'Polyexponential':
-                scheduler_val = samp_val[-1]
-                val = (val.split(" Polyexponential"))[0]
-            if samp_val[-1] == 'SGM Uniform':
-                scheduler_val = samp_val[-1]
-                val = (val.split(" SGM Uniform"))[0]
+                val = (val.split(" " + samp_val[-1]))[0]
         if key == 'scheduler' and isinstance(val, str):
             if scheduler_val is not None:
                 val = scheduler_val

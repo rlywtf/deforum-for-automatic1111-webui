@@ -24,6 +24,7 @@ def get_samplers_list():
         'dpm2 a': 'DPM2 a',
         'dpm++ 2s a': 'DPM++ 2S a',
         'dpm++ 2m': 'DPM++ 2M',
+        'dpm++ 2m sde': 'DPM++ 2M SDE',
         'dpm++ sde': 'DPM++ SDE',
         'dpm fast': 'DPM fast',
         'dpm adaptive': 'DPM adaptive',
