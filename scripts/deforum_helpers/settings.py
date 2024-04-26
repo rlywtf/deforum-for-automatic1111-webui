@@ -140,7 +140,7 @@ def load_all_settings(*args, ui_launch=False, **kwargs):
                 val = scheduler_val
             else:
                 from modules.sd_schedulers import schedulers_map
-                val = schedulers_map[val]
+                val = schedulers_map[val].label
         elif key == 'fill' and isinstance(val, int):
             val = mask_fill_choices[val]
         elif key in {'reroll_blank_frames', 'noise_type'} and key not in jdata:
