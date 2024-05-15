@@ -28,7 +28,7 @@ from .prompt import split_weighted_subprompts
 from .load_images import load_img, prepare_mask, check_mask_for_errors
 from .webui_sd_pipeline import get_webui_sd_pipeline
 from .rich import console
-from .defaults import get_samplers_list
+from .defaults import get_samplers_list, get_schedulers_list
 from .prompt import check_is_number
 from .opts_overrider import A1111OptionsOverrider
 import cv2
@@ -70,14 +70,14 @@ def pairwise_repl(iterable):
     next(b, None)
     return zip(a, b)
 
-def generate(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter,  frame=0, sampler_name=None):
+def generate(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter,  frame=0, sampler_name=None, scheduler_name=None):
     if state.interrupted:
         return None
 
     if args.reroll_blank_frames == 'ignore':
-        return generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name)
+        return generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name, scheduler_name)
 
-    image, caught_vae_exception = generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name)
+    image, caught_vae_exception = generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name, scheduler_name)
 
     if caught_vae_exception or not image.getbbox():
         patience = args.reroll_patience
@@ -86,7 +86,7 @@ def generate(args, keys, anim_args, loop_args, controlnet_args, root, parseq_ada
             while caught_vae_exception or not image.getbbox():
                 print("Rerolling with +1 seed...")
                 args.seed += 1
-                image, caught_vae_exception = generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name)
+                image, caught_vae_exception = generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name, scheduler_name=None)
                 patience -= 1
                 if patience == 0:
                     print("Rerolling with +1 seed failed for 10 iterations! Try setting webui's precision to 'full' and if it fails, please report this to the devs! Interrupting...")
@@ -100,12 +100,12 @@ def generate(args, keys, anim_args, loop_args, controlnet_args, root, parseq_ada
             return None
     return image
 
-def generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame=0, sampler_name=None):
+def generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame=0, sampler_name=None, scheduler_name=None):
     if cmd_opts.disable_nan_check:
-        image = generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name)
+        image = generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name, scheduler_name)
     else:
         try:
-            image = generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name)
+            image = generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame, sampler_name, scheduler_name)
         except Exception as e:
             if "A tensor with all NaNs was produced in VAE." in repr(e):
                 print(e)
@@ -114,7 +114,7 @@ def generate_with_nans_check(args, keys, anim_args, loop_args, controlnet_args, 
                 raise e
     return image, False
 
-def generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame=0, sampler_name=None):
+def generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, parseq_adapter, frame=0, sampler_name=None, scheduler_name=None):
     # Setup the pipeline
     p = get_webui_sd_pipeline(args, root)
     p.prompt, p.negative_prompt = split_weighted_subprompts(args.prompt, frame, anim_args.max_frames)
@@ -176,6 +176,13 @@ def generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, pars
         else:
             raise RuntimeError(f"Sampler name '{sampler_name}' is invalid. Please check the available sampler list in the 'Run' tab")
 
+    available_schedulers = get_schedulers_list()
+    if scheduler_name is not None:
+        if scheduler_name in available_schedulers.keys():
+            p.scheduler = available_schedulers[scheduler_name]
+        else:
+            raise RuntimeError(f"Scheduler name '{scheduler_name}' is invalid. Please check the available scheduler list in the 'Run' tab")
+
     if args.checkpoint is not None:
         info = sd_models.get_closet_checkpoint_match(args.checkpoint)
         if info is None:
@@ -220,6 +227,7 @@ def generate_inner(args, keys, anim_args, loop_args, controlnet_args, root, pars
                 seed_resize_from_h=p.seed_resize_from_h,
                 seed_resize_from_w=p.seed_resize_from_w,
                 sampler_name=p.sampler_name,
+                scheduler=p.scheduler,
                 batch_size=p.batch_size,
                 n_iter=p.n_iter,
                 steps=p.steps,
