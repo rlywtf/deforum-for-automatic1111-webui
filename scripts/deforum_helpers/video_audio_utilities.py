@@ -239,6 +239,7 @@ def ffmpeg_stitch_video(ffmpeg_location=None, fps=None, outmp4_path=None, stitch
     
     add_soundtrack_status = None
     add_soundtrack_success = None
+    temp_file = None
     if add_soundtrack != 'None':
         try:
             audio_path = clean_gradio_path_strings(audio_path)
@@ -280,8 +281,9 @@ def ffmpeg_stitch_video(ffmpeg_location=None, fps=None, outmp4_path=None, stitch
             add_soundtrack_status = f"\rError adding audio to video: {e}"
             add_soundtrack_success = False
         finally:
-            file_path = Path(temp_file.name)
-            file_path.unlink(missing_ok=True)
+            if temp_file:
+                file_path = Path(temp_file.name)
+                file_path.unlink(missing_ok=True)
             
     add_srt = opts.data.get("deforum_save_gen_info_as_srt", False) and opts.data.get("deforum_embed_srt", False) and srt_path is not None
     add_srt_status = None

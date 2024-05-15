@@ -129,9 +129,18 @@ def load_all_settings(*args, ui_launch=False, **kwargs):
     result = {}
     for key, default_val in data.items():
         val = jdata.get(key, default_val)
-        if key == 'sampler' and isinstance(val, int):
-            from modules.sd_samplers import samplers_for_img2img
-            val = samplers_for_img2img[val].name
+        if key == 'sampler' and isinstance(val, str):
+            samp_val = val.split()
+            scheduler_val = None
+            if samp_val[-1] in ['Uniform','SGM Uniform','Karras','Exponential','Polyexponential']:
+                scheduler_val = samp_val[-1]
+                val = (val.split(" " + samp_val[-1]))[0]
+        if key == 'scheduler' and isinstance(val, str):
+            if scheduler_val is not None:
+                val = scheduler_val
+            else:
+                from modules.sd_schedulers import schedulers_map
+                val = schedulers_map[val].label
         elif key == 'fill' and isinstance(val, int):
             val = mask_fill_choices[val]
         elif key in {'reroll_blank_frames', 'noise_type'} and key not in jdata:
@@ -142,7 +151,6 @@ def load_all_settings(*args, ui_launch=False, **kwargs):
             val = jdata.get(key, default_val)
         elif key == 'animation_prompts':
             val = json.dumps(jdata['prompts'], ensure_ascii=False, indent=4)
-
         result[key] = val
 
     if ui_launch:
